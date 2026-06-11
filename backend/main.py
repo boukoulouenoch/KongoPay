@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from psycopg2._psycopg import cursor
 from pydantic import BaseModel
 import psycopg2
 
@@ -42,9 +43,14 @@ def inscription(data: inscription):
     if result is not None:
         return{"message":"Ce numéro est déjà utilisé"}
     cursor.execute(
-        'INSERT INTO "USERS" (name,surname,phone_number,national_card,account_type,password) VALUES (%s,%s,%s,%s,%s,%s)',
+        'INSERT INTO "USERS" (name,surname,phone_number,national_card,account_type,password) VALUES (%s,%s,%s,%s,%s,%s) RETURNING id_users',
         (data.name,data.surname,data.phone_number,data.national_card,data.account_type,data.password)
     )
+
+    user_id = cursor.fetchone()[0]
+    cursor.execute('INSERT INTO "WALLETS" (balance,id_users) VALUES (0,%s)', (user_id,))
+
+
 
     connection.commit()
     cursor.close()
