@@ -111,7 +111,7 @@ def transfer_sender(data: transfer_sender):
     if connection is None:
         return{"message": "Erreur de connexion"}
     cursor = connection.cursor()
-    cursor.execute('SELECT*FROM "WALLETS" WHERE id_wallets = %s)', (data.id_wallet_sender,))
+    cursor.execute('SELECT*FROM "WALLETS" WHERE id_users = %s', (data.id_wallet_sender,))
     wallet_sender = cursor.fetchone()
     if wallet_sender is None:
         return {"message": "Portefeuille émetteur introuvable"}
@@ -121,23 +121,29 @@ def transfer_sender(data: transfer_sender):
     if user_receiver is None:
         return {"message":"Numéro introuvable. Veuillez réessayer"}
 
-    cursor.execute('SELECT*FROM "WALLETS" WHERE id_users = %s)', (user_receiver[0],))
+    cursor.execute('SELECT*FROM "WALLETS" WHERE id_users = %s', (user_receiver[0],))
     wallet_receiver = cursor.fetchone()
     if wallet_receiver is None:
         return {"message": "Portefeuille de dépôt introuvable"}
 
 
     if wallet_sender[1] < data.balance:
-        return {"message": "Montant insuffisant"}
+        return {"message": "Vous n'avez pas accès d'argent dans votre compte"}
     elif data.balance > wallet_sender[3]:
         return {"message": "Attention. Plafond journalier atteint"}
 
 
 
-    cursor.execute('UPDATE "WALLETS SET balance = balance -%s WHERE id_wallets = %s' , (data.balance,data.id_wallet_sender))
+    cursor.execute('UPDATE "WALLETS" SET balance = balance -%s WHERE id_wallets = %s' , (data.balance,wallet_sender[0]))
     cursor.execute('UPDATE "WALLETS" SET balance = balance + %s WHERE id_wallets = %s', (data.balance,wallet_receiver[0]))
 
+    cursor.execute('INSERT INTO "TRANSACTIONS" (balance,currency,status,id_wallet_sender,id_wallet_receiver) VALUES (%s,%s,%s,%s,%s)',(data.balance,'XAF','Validée',wallet_sender[0],wallet_receiver[0],))
 
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    return {"message":"Transaction effectuée avec succès"}
 
 
 
