@@ -99,5 +99,53 @@ def connexion(data: connexion):
     connection.close()
 
 
+class transfer_sender(BaseModel):
+    balance:float
+    id_wallet_sender: int
+    phone_number_receiver:str
+    
+    
+@app.post("/transfer_sender")
+def transfer_sender(data: transfer_sender):
+    connection = get_connection()
+    if connection is None:
+        return{"message": "Erreur de connexion"}
+    cursor = connection.cursor()
+    cursor.execute('SELECT*FROM "WALLETS" WHERE id_wallets = %s)', (data.id_wallet_sender,))
+    wallet_sender = cursor.fetchone()
+    if wallet_sender is None:
+        return {"message": "Portefeuille émetteur introuvable"}
+
+    cursor.execute('SELECT*FROM "USERS" WHERE phone_number = %s', (data.phone_number_receiver,))
+    user_receiver = cursor.fetchone()
+    if user_receiver is None:
+        return {"message":"Numéro introuvable. Veuillez réessayer"}
+
+    cursor.execute('SELECT*FROM "WALLETS" WHERE id_users = %s)', (user_receiver[0],))
+    wallet_receiver = cursor.fetchone()
+    if wallet_receiver is None:
+        return {"message": "Portefeuille de dépôt introuvable"}
+
+
+    if wallet_sender[1] < data.balance:
+        return {"message": "Montant insuffisant"}
+    elif data.balance > wallet_sender[3]:
+        return {"message": "Attention. Plafond journalier atteint"}
+
+
+
+    cursor.execute('UPDATE "WALLETS SET balance = balance -%s WHERE id_wallets = %s' , (data.balance,data.id_wallet_sender))
+    cursor.execute('UPDATE "WALLETS" SET balance = balance + %s WHERE id_wallets = %s', (data.balance,wallet_receiver[0]))
+
+
+
+
+
+
+
+    
+
+        
+
 
 
