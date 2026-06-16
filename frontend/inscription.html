@@ -7,6 +7,20 @@
     <title>inscription - KongoPay</title>
 </head>
 <body>
-    
+    <form action="POST">
+        <h1>S'inscrire</h1>
+        <div class="inputs">
+            <input type="text" name="prénom" placeholder="Prénom" required>
+            <input type="text" name="nom" placeholder="Nom" required>
+            <input type="tel" placeholder="téléphone" required>
+            <input type="text" name="CNI" placeholder="Numéro de CNI" required>
+            <input type="text" name="Account_type" placeholder="Type de compte" required>
+            <input type="password" name="password" placeholder="mot de passe " required>
+        </div>
+        <div class="connexion">Vous avez déjà un compte ?<a href="connexion.html"> connectez-vous</a></div>
+        <div class="button">
+            <button type="submit">s'inscrire</button>
+        </div>
+    </form>
 </body>
 </html>
